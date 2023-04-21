@@ -1,6 +1,5 @@
 from tornado.gen import coroutine
 from tornado.web import authenticated
-
 from .auth import AuthHandler
 
 class LogoutHandler(AuthHandler):

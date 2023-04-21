@@ -3,6 +3,10 @@ from tornado.web import RequestHandler
 
 class BaseHandler(RequestHandler):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.response = dict()
+
     @property
     def db(self):
         return self.application.db
@@ -29,17 +33,16 @@ class BaseHandler(RequestHandler):
     def write_error(self, status_code, **kwargs):
         if 'message' not in kwargs:
             if status_code == 405:
-                kwargs['message'] = 'Invalid HTTP method.'
+                self.response = kwargs.get('response', {})
             else:
                 kwargs['message'] = 'Unknown error.'
         self.response = kwargs
-        self.write_json()
+        self.write_json(response=self.response)
 
-    def write_json(self):
-        output = dumps(self.response)
+    def write_json(self, response=None):
+        output = dumps(response or self.response)
         self.write(output)
 
     def options(self):
         self.set_status(204)
         self.finish()
-
