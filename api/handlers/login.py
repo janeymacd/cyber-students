@@ -78,4 +78,3 @@ class LoginHandler(BaseHandler):
         else:
             self.send_error(403, message='The email address and password are invalid!')
 
-

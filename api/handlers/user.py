@@ -8,16 +8,6 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
 class UserHandler(AuthHandler, ABC):
-    # Load the keys and nonces from the keyfile
-    with open('keyfile', 'r') as f:
-        key_data = json.load(f)
-
-    # Define a function to retrieve a specific key and nonce
-    def get_key_and_nonce(self, name):
-        for item in self.key_data:
-            if item.get('name') == name:
-                return bytes.fromhex(item.get('key')), bytes.fromhex(item.get('nonce'))
-        return None, None
 
     # Define a function to decrypt a value using a specific key and nonce
     def decrypt_value(self, value, key, nonce):
@@ -41,6 +31,17 @@ class UserHandler(AuthHandler, ABC):
         return user_data
 
     async def generate_user_data(self, email):
+        # Load the keys and nonces from the keyfile
+        with open('keyfile', 'r') as f:
+            key_data = json.load(f)
+
+        # Define a function to retrieve a specific key and nonce
+        def get_key_and_nonce(name):
+            for item in key_data:
+                if item.get('name') == name:
+                    return bytes.fromhex(item.get('key')), bytes.fromhex(item.get('nonce'))
+            return None, None
+
         # Retrieve a user's encrypted details from the database
         if not self.db:
             return None
@@ -52,10 +53,10 @@ class UserHandler(AuthHandler, ABC):
         encrypted_disabilities = user_data['disabilities']
 
         # Retrieve the keys and nonces for the encrypted details
-        key_full_name, nonce_full_name = self.get_key_and_nonce('full_name')
-        key_address, nonce_address = self.get_key_and_nonce('address')
-        key_phone, nonce_phone = self.get_key_and_nonce('phone')
-        key_disabilities, nonce_disabilities = self.get_key_and_nonce('disabilities')
+        key_full_name, nonce_full_name = get_key_and_nonce('full_name')
+        key_address, nonce_address = get_key_and_nonce('address')
+        key_phone, nonce_phone = get_key_and_nonce('phone')
+        key_disabilities, nonce_disabilities = get_key_and_nonce('disabilities')
 
         # Decrypt the encrypted details using the keys and nonces
         full_name = self.decrypt_value(encrypted_full_name, key_full_name, nonce_full_name)
