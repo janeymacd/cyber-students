@@ -84,7 +84,3 @@ class UserHandler(AuthHandler, ABC):
             self.response['phone'] = decrypted_data['phone']
             self.response['disabilities'] = decrypted_data['disabilities']
         self.write_json()
-
-
-
-
