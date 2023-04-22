@@ -2,43 +2,41 @@
 
 ## Updated Documentation
 
-The initial project was amended to include the following functionality:
+## Changes are commented in the code. The main changes made in order to achieve the desired functionality is below:
 
-The user can now register and save additional personal details: Full Name, Address, Phone, Disabilities
-These personal details are encrypted on the database, the password is hased and saved on the database along with the salt
-The key and noce for the encryption are saved in a separate keyfile
-The user can login using their email address and password in plain text, this is verified using the  stored salt and hash
-If login is successful a token is issued and the complete user details are returned unencrypted, they remain encrypted on the database
-Upon logout the token is removed from the database and the user is set to none.
+## registration.py
+The registration.py has been updated to retrive the required additional datat from the user. 
+It includes code which encrypts user data using AES in CTR mode, randomly generating a 32 byte key and 16 byte nonce.
+This returns ciphertext which is stored in the database.
+It includes a method to hash the user password , the hash and salt are then saved on the database.
+When the data has been encrypted it is stored on the database , the key and nonce are stored in a separate keyfile. I a real world scenario it would  be better to use something like a key manager to store the keys
+
+## user.py
+The user.py file has been updated to include code that retrieves the hashed password and salt stored in the database.
+There is a check which returns an error if either of these variables are missing.
+The user entered password is then hashed using the initial stored salt and if the newly hashed password and the stored hased password match a token is returned.
+If not an error is returned.
+Changes were made to retrieve encrypted data, decrypt and display user profile when prompted.
 
 
-A new user can be registered using the following:
 
-curl -X POST http://localhost:4000/students/api/registration -d "{\"email\": \"email@6000.com\", \"password\": \"password\", \"displayName\": \"janey\", \"fullName\": \"jane mac donald\", \"address\": \"1 crypto way\", \"phone\": \"08774512365\", \"disabilities\": \"dyslexia\"}"
+## A new user can be registered using the following:
 
-A user can login using the following:
+curl -X POST http://localhost:4000/students/api/registration -d "{\"email\": \"email@530530.com\", \"password\": \"password\", \"displayName\": \"janey\", \"fullName\": \"jane mac donald\", \"address\": \"1 crypto way\", \"phone\": \"08774512365\", \"disabilities\": \"dyslexia\"}"
 
-curl -X POST http://localhost:4000/students/api/login -d "{\"email\": \"email@6000.com\", \"password\": \"password\"}"
+## A user can login using the following:
 
-To display user details use the following (replacing the token with the one issued at login):
+curl -X POST http://localhost:4000/students/api/login -d "{\"email\": \"email@530530.com\", \"password\": \"password\"}"
+
+## To display user details use the following (replacing the token with the one issued at login):
 
 curl -H "X-TOKEN: 71335384e8da457ba3eba5df2c0c978a" http://localhost:4000/students/api/user
 
-To logout use the following (replacing the token with the one issued at login):
+## To logout use the following (replacing the token with the one issued at login):
 
 curl -X POST -H "X-TOKEN: a71a05e86ea041c48285d5399b79066b" http://localhost:4000/students/api/logout
 
 When the run_hacker.py script is run the hacking attempt is unsuccessful
-
-## Unexpected Behaviour of code
-
-All functionality required is possible however there is some strange behaviour with the code that I will 
-attempt to troubleshoot further. When registering a user, the user details are saved to the database and 
-encrypted. It is then possible to login based on the email and password combination and to logout. When you 
-try to display the user profile however the app crashes and you must restart the server. Once the server has 
-been restarted it is then possible to login and use the login token to display the user profile. All user data
-is displayed in unencrypted form as is the expected behaviour of the code. It is possible to login and out then
-as desired and the code behaves as expected after that.
 
 
 

@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 class UserHandler(AuthHandler, ABC):
 
-    # Define a function to decrypt a value using a specific key and nonce
+    # function to decrypt a value using a specific key and nonce
     def decrypt_value(self, value, key, nonce):
         if not key or not nonce:
             return None
@@ -31,18 +31,18 @@ class UserHandler(AuthHandler, ABC):
         return user_data
 
     async def generate_user_data(self, email):
-        # Load the keys and nonces from the keyfile
+        # load the keys and nonces from the keyfile
         with open('keyfile', 'r') as f:
             key_data = json.load(f)
 
-        # Define a function to retrieve a specific key and nonce
+        # function to retrieve a specific key and nonce
         def get_key_and_nonce(name):
             for item in key_data:
                 if item.get('name') == name:
                     return bytes.fromhex(item.get('key')), bytes.fromhex(item.get('nonce'))
             return None, None
 
-        # Retrieve a user's encrypted details from the database
+        # retrieve user's encrypted details from the database
         if not self.db:
             return None
 
@@ -52,19 +52,19 @@ class UserHandler(AuthHandler, ABC):
         encrypted_phone = user_data['phone']
         encrypted_disabilities = user_data['disabilities']
 
-        # Retrieve the keys and nonces for the encrypted details
+        # retrieve keys and nonces for the encrypted details
         key_full_name, nonce_full_name = get_key_and_nonce('full_name')
         key_address, nonce_address = get_key_and_nonce('address')
         key_phone, nonce_phone = get_key_and_nonce('phone')
         key_disabilities, nonce_disabilities = get_key_and_nonce('disabilities')
 
-        # Decrypt the encrypted details using the keys and nonces
+        # decrypt encrypted details using the keys and nonces
         full_name = self.decrypt_value(encrypted_full_name, key_full_name, nonce_full_name)
         address = self.decrypt_value(encrypted_address, key_address, nonce_address)
         phone = self.decrypt_value(encrypted_phone, key_phone, nonce_phone)
         disabilities = self.decrypt_value(encrypted_disabilities, key_disabilities, nonce_disabilities)
 
-        # Return the decrypted user data
+        # return decrypted user data
         return {
             'full_name': full_name,
             'address': address,
@@ -77,7 +77,7 @@ class UserHandler(AuthHandler, ABC):
         self.set_status(200)
         self.response['email'] = self.current_user['email']
         self.response['displayName'] = self.current_user['display_name']
-        # Decrypt the user data using the generate_user_data function
+        # decrypt user data using the generate_user_data function
         decrypted_data = await self.generate_user_data(self.current_user['email'])
         if decrypted_data:
             self.response['full_name'] = decrypted_data['full_name']

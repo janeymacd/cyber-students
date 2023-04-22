@@ -56,16 +56,17 @@ class LoginHandler(BaseHandler):
         if user is None:
             self.send_error(403, message='The email address and password are invalid!')
             return
-
+        # stored hash and salt for the user are retrieved from the database
         stored_hashed_password = user.get('password')
         salt = user.get('salt')
-
+        # if one or both of these values are missing and error is returned
         if stored_hashed_password is None or salt is None:
             self.send_error(500, message='User account is not properly configured')
             return
-
+        # the user entered password is then hashed using the bcrypt library with the original salt
         entered_hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-
+        # if the newly hashed password and the stored hash passwords match a token is returned
+        # if they don't match an error is returned
         if stored_hashed_password == entered_hashed_password:
 
             token = yield self.generate_token(email)

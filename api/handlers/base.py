@@ -1,6 +1,7 @@
 from json import dumps, loads
 from tornado.web import RequestHandler
 
+
 class BaseHandler(RequestHandler):
 
     def __init__(self, *args, **kwargs):

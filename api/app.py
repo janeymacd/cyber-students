@@ -10,6 +10,7 @@ from .handlers.login import LoginHandler
 from .handlers.logout import LogoutHandler
 from .handlers.user import UserHandler
 
+
 class Application(Application):
 
     def __init__(self):

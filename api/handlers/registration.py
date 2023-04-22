@@ -7,19 +7,27 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import secrets
 import json
 
+
+# encryption method for user profile data
 def encrypt_value(value):
+    # generate a 32 byte key using secrets module and converts to bytes
     key = secrets.token_bytes(32)
     key_bytes = bytes(key)
+    # generates 16 bytes nonce using secrets module
     nonce_bytes = secrets.token_bytes(16)
-
+    # initialises new cipher object using aes in ctr mode with the nonce_bytes
     aes_ctr_cipher = Cipher(algorithms.AES(key_bytes), mode=modes.CTR(nonce_bytes))
+    # initialises new encryptor object from the cipher object
     aes_ctr_encryptor = aes_ctr_cipher.encryptor()
-
+    # encodes using utf-8 encoding
     plaintext_bytes = bytes(value, "utf-8")
+    # converts ciphertext_bytes to hex string
     ciphertext_bytes = aes_ctr_encryptor.update(plaintext_bytes)
     ciphertext = ciphertext_bytes.hex()
-
+    # returns a tuple containing ciphertext, key_bytes and nonce_bytes
     return ciphertext, key_bytes, nonce_bytes
+
+
 class RegistrationHandler(BaseHandler, ABC):
 
     @coroutine
@@ -70,19 +78,19 @@ class RegistrationHandler(BaseHandler, ABC):
             return
 
         if not full_name:
-            self.send_error(400, message='The Full Name field is invalid!')
+            self.send_error(400, message='Please enter a full name!')
             return
 
         if not address:
-            self.send_error(400, message='The address is invalid!')
+            self.send_error(400, message='Please enter an address!')
             return
 
         if not phone:
-            self.send_error(400, message='The phone is invalid!')
+            self.send_error(400, message='Please enter a phone number!')
             return
 
         if not disabilities:
-            self.send_error(400, message='The disabilities is invalid!')
+            self.send_error(400, message='If this field does not apply please enter NONE!')
             return
 
         user = yield self.db.users.find_one({
@@ -93,23 +101,24 @@ class RegistrationHandler(BaseHandler, ABC):
             self.send_error(409, message='A user with the given email address already exists!')
             return
 
+        # function to hash user password
         def hash_password(password):
-            # Generate a salt for the password hash
+            # generate a salt for the password hash
             salt = bcrypt.gensalt()
-            # Hash the password using bcrypt with the salt
+            # hash the password using bcrypt with the salt
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-            # Return the hashed password and salt as bytes
+            # return the hashed password and salt as bytes
             return hashed_password, salt
 
-        # Hash the password
+        # hash the password
         hashed_password, salt = hash_password(password)
-
+        # encrypt_value method is used to encrypt user data and store in variables, along with key and nonce
         encrypted_full_name, key_full_name, nonce_full_name = encrypt_value(full_name)
         encrypted_address, key_address, nonce_address = encrypt_value(address)
         encrypted_phone, key_phone, nonce_phone = encrypt_value(phone)
         encrypted_disabilities, key_disabilities, nonce_disabilities = encrypt_value(disabilities)
 
-        # Store the encrypted values in the users collection of the db
+        # store the encrypted values in the users collection of the db
         yield self.db.users.insert_one({
             'email': email,
             'password': hashed_password,
@@ -121,7 +130,7 @@ class RegistrationHandler(BaseHandler, ABC):
             'disabilities': encrypted_disabilities
         })
 
-        # Store the keys and nonces in a file named keyfile
+        # store the keys and nonces in a file named keyfile
         with open('keyfile', 'w') as f:
             json.dump([
                 {'name': 'full_name', 'key': key_full_name.hex(), 'nonce': nonce_full_name.hex()},
