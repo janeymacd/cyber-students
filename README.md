@@ -2,14 +2,14 @@
 
 ## Updated Documentation
 
-## Changes are commented in the code. The main changes made in order to achieve the desired functionality is below:
+## Changes are commented in the code. The main changes made in order to achieve the desired functionality are detailed below:
 
 ## registration.py
-The registration.py has been updated to retrive the required additional datat from the user. 
+The registration.py has been updated to retrieve the required additional data from the user. 
 It includes code which encrypts user data using AES in CTR mode, randomly generating a 32 byte key and 16 byte nonce.
 This returns ciphertext which is stored in the database.
 It includes a method to hash the user password , the hash and salt are then saved on the database.
-When the data has been encrypted it is stored on the database , the key and nonce are stored in a separate keyfile. I a real world scenario it would  be better to use something like a key manager to store the keys
+When the data has been encrypted it is stored on the database , the key and nonce are stored in a separate keyfile. In a real world scenario it would  be better to use something like a key manager to store the keys
 
 ## user.py
 The user.py file has been updated to include code that retrieves the hashed password and salt stored in the database.
